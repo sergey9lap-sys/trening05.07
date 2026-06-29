@@ -660,7 +660,7 @@ export default function Home() {
             Политика конфиденциальности
           </a>
           <a
-            href="https://docs.google.com/document/d/1t6jZzRgC6MbYSxAhUuTf2HJbVIn9GXzp/edit?usp=sharing&ouid=112592013953206750379&rtpof=true&sd=true"
+            href="https://agkedu.getcourse.ru/oferta_igrovie_voronki"
             target="_blank"
             rel="noreferrer"
           >
