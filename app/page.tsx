@@ -14,6 +14,15 @@ type ProgramItem = {
   tone: "mint" | "lavender" | "paper" | "warm";
 };
 
+type TariffItem = {
+  title: string;
+  price: string;
+  items: string[];
+  cta: string;
+  widgetId: string;
+  featured?: boolean;
+};
+
 const results = [
   [47, "конверсии в заявку на бесплатнике"],
   [31, "из заявки в оплату"],
@@ -61,10 +70,11 @@ const program: ProgramItem[] = [
   },
 ];
 
-const tariffs = [
+const tariffs: TariffItem[] = [
   {
     title: "Онлайн",
     price: "2 900 ₽",
+    widgetId: "1624164",
     items: [
       "05 июля 10:00–17:00 мск полноценное участие онлайн в Zoom",
       "Доступ к записи тренинга 30 дней",
@@ -75,6 +85,7 @@ const tariffs = [
   {
     title: "Онлайн или офлайн + личная сессия",
     price: "19 900 ₽",
+    widgetId: "1624167",
     items: [
       "05 июля 10:00–17:00 мск полноценное участие офлайн в Москве или онлайн в Zoom",
       "Индивидуальная сессия с Александрой по внедрению геймификации в ваши воронки",
@@ -87,6 +98,7 @@ const tariffs = [
   {
     title: "Онлайн или офлайн + разработка игры под ключ",
     price: "от 150 000 ₽",
+    widgetId: "1624168",
     items: [
       "05 июля 10:00–17:00 мск полноценное участие офлайн в Москве или онлайн в Zoom",
       "Доступ к записи тренинга 90 дней",
@@ -131,6 +143,7 @@ function Icon({ name }: { name: "flag" | "search" | "star" | "gift" | "chart" | 
 
 export default function Home() {
   const scope = useRef<HTMLElement>(null);
+  const [activeTariff, setActiveTariff] = useState<TariffItem | null>(null);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -397,6 +410,22 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!activeTariff) return;
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setActiveTariff(null);
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [activeTariff]);
+
   return (
     <main ref={scope} className="site-shell">
       <section className="hero section-pad">
@@ -550,10 +579,10 @@ export default function Home() {
                   <li key={item}>{item}</li>
                 ))}
               </ul>
-              <a className="cta-button" href="#care">
+              <button className="cta-button" type="button" onClick={() => setActiveTariff(tariff)}>
                 {tariff.cta}
                 <span aria-hidden="true">→</span>
-              </a>
+              </button>
             </article>
           ))}
         </div>
@@ -674,8 +703,61 @@ export default function Home() {
           </a>
         </div>
       </footer>
+      <GetCourseModal tariff={activeTariff} onClose={() => setActiveTariff(null)} />
       <CookieNotice />
     </main>
+  );
+}
+
+function GetCourseModal({ tariff, onClose }: { tariff: TariffItem | null; onClose: () => void }) {
+  const [src, setSrc] = useState("");
+
+  useEffect(() => {
+    if (!tariff) {
+      setSrc("");
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    params.set("id", tariff.widgetId);
+    params.set("ref", document.referrer);
+    params.set("loc", window.location.href);
+
+    const clrtQueryData = (window as Window & { clrtQueryData?: unknown }).clrtQueryData;
+    if (clrtQueryData) {
+      params.set("clrtQueryData", JSON.stringify(clrtQueryData));
+    }
+
+    setSrc(`https://agkedu.getcourse.ru/pl/lite/widget/widget?${params.toString()}`);
+  }, [tariff]);
+
+  if (!tariff) return null;
+
+  return (
+    <div className="gc-modal" role="dialog" aria-modal="true" aria-labelledby="gc-modal-title">
+      <button className="gc-modal-backdrop" type="button" onClick={onClose} aria-label="Закрыть форму" />
+      <div className="gc-modal-panel">
+        <div className="gc-modal-head">
+          <div>
+            <span>Заявка на тариф</span>
+            <h2 id="gc-modal-title">{tariff.title}</h2>
+          </div>
+          <button className="gc-modal-close" type="button" onClick={onClose} aria-label="Закрыть форму">
+            ×
+          </button>
+        </div>
+        <div className="gc-widget-frame">
+          {src ? (
+            <iframe
+              src={src}
+              title={`Форма заявки: ${tariff.title}`}
+              allowFullScreen
+              loading="lazy"
+            />
+          ) : null}
+        </div>
+      </div>
+    </div>
   );
 }
 
