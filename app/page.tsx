@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -66,10 +66,8 @@ const tariffs = [
     title: "Онлайн",
     price: "2 900 ₽",
     items: [
-      "Полный день участия в Zoom",
-      "Доступ к записи после тренинга",
-      "Разбор игровых механик для запусков",
-      "Практические примеры из запусков",
+      "05 июля 10:00–17:00 мск полноценное участие онлайн в Zoom",
+      "Доступ к записи тренинга 30 дней",
       "Подойдет, если хотите разобраться в подходе и внедрить первые элементы самостоятельно",
     ],
     cta: "Забронировать место",
@@ -78,20 +76,20 @@ const tariffs = [
     title: "Онлайн или офлайн + личная сессия",
     price: "19 900 ₽",
     items: [
-      "Полный день участия в Zoom или офлайн",
-      "Доступ к записи после тренинга",
-      "Все материалы и примеры с тренинга",
-      "Личная сессия по вашей воронке",
-      "Поиск точек, где можно добавить игровые механики",
-      "Рекомендации по внедрению под ваш продукт",
+      "05 июля 10:00–17:00 мск полноценное участие офлайн в Москве или онлайн в Zoom",
+      "Индивидуальная сессия с Александрой по внедрению геймификации в ваши воронки",
+      "Доступ к записи тренинга 30 дней",
+      "Подойдет, если хотите разобрать свою воронку с экспертом и получить понятный план внедрения",
     ],
     cta: "Забронировать место",
     featured: true,
   },
   {
-    title: "Разработка игры под ключ",
+    title: "Онлайн или офлайн + разработка игры под ключ",
     price: "от 150 000 ₽",
     items: [
+      "05 июля 10:00–17:00 мск полноценное участие офлайн в Москве или онлайн в Zoom",
+      "Доступ к записи тренинга 90 дней",
       "Анализ продукта и текущей воронки",
       "Разработка игровой механики под запуск",
       "Сценарий вовлечения аудитории",
@@ -108,6 +106,9 @@ const careLinks = [
   ["Макс", "https://agkedu.getcourse.ru/max_subscribe"],
   ["ВКонтакте", "https://agkedu.getcourse.ru/vk_subscribe"],
 ];
+
+const COOKIE_CONSENT_KEY = "agk-cookie-consent";
+const POLICY_URL = "https://agkedu.ru/personaldata";
 
 function Icon({ name }: { name: "flag" | "search" | "star" | "gift" | "chart" | "users" | "shield" | "crown" }) {
   const paths = {
@@ -673,7 +674,43 @@ export default function Home() {
           </a>
         </div>
       </footer>
+      <CookieNotice />
     </main>
+  );
+}
+
+function CookieNotice() {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(localStorage.getItem(COOKIE_CONSENT_KEY) !== "accepted");
+  }, []);
+
+  const acceptCookies = () => {
+    localStorage.setItem(COOKIE_CONSENT_KEY, "accepted");
+    setIsVisible(false);
+  };
+
+  if (!isVisible) return null;
+
+  return (
+    <aside className="cookie-notice" role="dialog" aria-label="Уведомление об использовании cookies">
+      <button className="cookie-notice-close" type="button" onClick={acceptCookies} aria-label="Закрыть уведомление">
+        ×
+      </button>
+      <p>
+        Продолжая использование сайта, я выражаю согласие на&nbsp;обработку моих
+        персональных данных при помощи сервиса ЯндексМетрика, подтверждаю, что
+        ознакомлен с&nbsp;
+        <a href={POLICY_URL} target="_blank" rel="noreferrer">
+          политикой в&nbsp;отношении обработки персональных данных
+        </a>
+        &nbsp;и уведомлен об&nbsp;использовании файлов cookies.
+      </p>
+      <button className="cookie-notice-accept" type="button" onClick={acceptCookies}>
+        Соглашаюсь
+      </button>
+    </aside>
   );
 }
 
